@@ -1,0 +1,898 @@
+local Players = game:GetService("Players")
+local RS = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local VIM = game:GetService("VirtualInputManager")
+local CoreGui = game:GetService("CoreGui")
+local TeleportService = game:GetService("TeleportService")
+local TweenService = game:GetService("TweenService")
+local StarterGui = game:GetService("StarterGui")
+local lp = Players.LocalPlayer
+
+getgenv().SafeAutoSell = false
+getgenv().SafeSellInterval = 5
+getgenv().NWKZ_Anchor = false
+getgenv().PP_Noclip = false
+getgenv().PP_WalkSpeed = 46
+getgenv().PP_AutoSkillAll = false
+getgenv().PP_Skill_Z = false
+getgenv().PP_Skill_X = false
+getgenv().PP_Skill_C = false
+getgenv().PP_Skill_V = false
+getgenv().WalkOnWater = false
+getgenv().AntiAdminEnabled = true
+getgenv().AdminInServer = false
+
+if CoreGui:FindFirstChild("BeoHubUI") then CoreGui.BeoHubUI:Destroy() end
+if lp.PlayerGui:FindFirstChild("BeoHubUI") then lp.PlayerGui.BeoHubUI:Destroy() end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "BeoHubUI"
+ScreenGui.ResetOnSpawn = false
+pcall(function() ScreenGui.Parent = CoreGui end)
+if not ScreenGui.Parent then ScreenGui.Parent = lp.PlayerGui end
+
+-- ====================== 🛡️ ANTI ADMIN ======================
+local AdminList = {"tom_iceren","ctgthecreator"}
+local function CheckAdmin()
+    for _, player in ipairs(Players:GetPlayers()) do
+        local name = player.Name:lower()
+        for _, adminName in ipairs(AdminList) do
+            if name == adminName:lower() then
+                return true, player.Name
+            end
+        end
+    end
+    return false, nil
+end
+local function DisableAllScripts()
+    getgenv().SafeAutoSell = false
+    getgenv().NWKZ_Anchor = false
+    getgenv().PP_Noclip = false
+    getgenv().PP_AutoSkillAll = false
+    getgenv().PP_Skill_Z = false
+    getgenv().PP_Skill_X = false
+    getgenv().PP_Skill_C = false
+    getgenv().PP_Skill_V = false
+    getgenv().WalkOnWater = false
+    if CoreGui:FindFirstChild("BeoHubUI") then CoreGui.BeoHubUI.Enabled = false end
+    if lp.PlayerGui:FindFirstChild("BeoHubUI") then lp.PlayerGui.BeoHubUI.Enabled = false end
+end
+local function EnableAllScripts()
+    if CoreGui:FindFirstChild("BeoHubUI") then CoreGui.BeoHubUI.Enabled = true end
+    if lp.PlayerGui:FindFirstChild("BeoHubUI") then lp.PlayerGui.BeoHubUI.Enabled = true end
+end
+local function NotifyAdmin(adminName)
+    StarterGui:SetCore("SendNotification",{Title="⚠️ ADMIN TRONG SERVER ⚠️",Text="Phát hiện: "..adminName.."\nĐã tắt toàn bộ script!",Duration=5})
+end
+local function NotifySafe()
+    StarterGui:SetCore("SendNotification",{Title="✅ AN TOÀN",Text="Admin đã rời server. Script bật lại!",Duration=5})
+end
+task.spawn(function()
+    while task.wait(1) do
+        if getgenv().AntiAdminEnabled then
+            local hasAdmin, adminName = CheckAdmin()
+            if hasAdmin and not getgenv().AdminInServer then
+                getgenv().AdminInServer = true
+                DisableAllScripts()
+                NotifyAdmin(adminName)
+                warn("⚠️ ADMIN ĐÃ VÀO: "..adminName)
+            elseif not hasAdmin and getgenv().AdminInServer then
+                getgenv().AdminInServer = false
+                EnableAllScripts()
+                NotifySafe()
+                print("✅ Admin đã rời. Script bật lại!")
+            end
+        end
+    end
+end)
+-- ====================== 👑 BEOHUB AURA INTRO 10S ======================
+local Intro = Instance.new("Frame")
+Intro.Name = "AuraIntro"
+Intro.Size = UDim2.new(1, 0, 1, 0)
+Intro.BackgroundColor3 = Color3.fromRGB(3, 3, 10)
+Intro.BorderSizePixel = 0
+Intro.ZIndex = 999
+Intro.Parent = ScreenGui
+
+local IntroStroke = Instance.new("UIStroke")
+IntroStroke.Color = Color3.fromRGB(0, 180, 255)
+IntroStroke.Thickness = 3
+IntroStroke.Parent = Intro
+
+local Logo = Instance.new("TextLabel")
+Logo.Size = UDim2.new(1, 0, 0, 100)
+Logo.Position = UDim2.new(0, 0, 0.22, 0)
+Logo.BackgroundTransparency = 1
+Logo.Text = "👑🐧"
+Logo.TextSize = 65
+Logo.Font = Enum.Font.GothamBlack
+Logo.TextColor3 = Color3.fromRGB(255, 255, 255)
+Logo.TextTransparency = 1
+Logo.ZIndex = 1000
+Logo.Parent = Intro
+
+local IntroName = Instance.new("TextLabel")
+IntroName.Size = UDim2.new(1, 0, 0, 60)
+IntroName.Position = UDim2.new(0, 0, 0.37, 0)
+IntroName.BackgroundTransparency = 1
+IntroName.Text = "BeoHub v5.0"
+IntroName.TextSize = 38
+IntroName.Font = Enum.Font.GothamBlack
+IntroName.TextColor3 = Color3.fromRGB(0, 200, 255)
+IntroName.TextTransparency = 1
+IntroName.ZIndex = 1000
+IntroName.Parent = Intro
+
+local IntroAura = Instance.new("TextLabel")
+IntroAura.Size = UDim2.new(1, 0, 0, 45)
+IntroAura.Position = UDim2.new(0, 0, 0.47, 0)
+IntroAura.BackgroundTransparency = 1
+IntroAura.Text = "🥶 AURA 99999 • BÁ KHÍ MODE 🔥"
+IntroAura.TextSize = 20
+IntroAura.Font = Enum.Font.GothamBold
+IntroAura.TextColor3 = Color3.fromRGB(255, 255, 255)
+IntroAura.TextTransparency = 1
+IntroAura.ZIndex = 1000
+IntroAura.Parent = Intro
+
+local LoadingBG = Instance.new("Frame")
+LoadingBG.Size = UDim2.new(0, 340, 0, 8)
+LoadingBG.Position = UDim2.new(0.5, -170, 0.60, 0)
+LoadingBG.BackgroundColor3 = Color3.fromRGB(30, 30, 45)
+LoadingBG.BorderSizePixel = 0
+LoadingBG.ZIndex = 1000
+LoadingBG.Parent = Intro
+Instance.new("UICorner", LoadingBG).CornerRadius = UDim.new(1, 0)
+
+local Loading = Instance.new("Frame")
+Loading.Size = UDim2.new(0, 0, 1, 0)
+Loading.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
+Loading.BorderSizePixel = 0
+Loading.ZIndex = 1001
+Loading.Parent = LoadingBG
+Instance.new("UICorner", Loading).CornerRadius = UDim.new(1, 0)
+
+local Status = Instance.new("TextLabel")
+Status.Size = UDim2.new(1, 0, 0, 30)
+Status.Position = UDim2.new(0, 0, 0.64, 0)
+Status.BackgroundTransparency = 1
+Status.Text = "Đang khởi động..."
+Status.TextSize = 13
+Status.Font = Enum.Font.GothamBold
+Status.TextColor3 = Color3.fromRGB(160, 160, 180)
+Status.ZIndex = 1000
+Status.Parent = Intro
+
+task.spawn(function()
+    TweenService:Create(Logo, TweenInfo.new(1.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
+    task.wait(1.2)
+    TweenService:Create(IntroName, TweenInfo.new(1.2, Enum.EasingStyle.Quad), {TextTransparency = 0}):Play()
+    task.wait(1.2)
+    TweenService:Create(IntroAura, TweenInfo.new(1.2), {TextTransparency = 0}):Play()
+    task.wait(1.2)
+    local Messages = {"🥶 AURA đang tăng...","🔥 Kích hoạt BÁ KHÍ...","👑 Đang triệu hồi quyền năng...","💀 Server bắt đầu run...","🗿 Não server đang load...","🐧 PENGUIN POWER...","😈 AURA +99999..."}
+    for i, message in ipairs(Messages) do
+        Status.Text = message
+        TweenService:Create(Loading, TweenInfo.new(5 / #Messages, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(i / #Messages, 0, 1, 0)}):Play()
+        task.wait(5 / #Messages)
+    end
+    Status.Text = "👑 BÁ KHÍ 99999 ĐÃ SẴN SÀNG"
+    task.wait(0.7)
+    local FadeTime = 0.7
+    for _, Object in ipairs({Logo, IntroName, IntroAura, Status}) do
+        TweenService:Create(Object, TweenInfo.new(FadeTime), {TextTransparency = 1}):Play()
+    end
+    TweenService:Create(LoadingBG, TweenInfo.new(FadeTime), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(Loading, TweenInfo.new(FadeTime), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(Intro, TweenInfo.new(FadeTime), {BackgroundTransparency = 1}):Play()
+    task.wait(FadeTime)
+    Intro:Destroy()
+end)
+
+-- ====================== NÚT MỞ ======================
+local OpenBtn = Instance.new("TextButton")
+OpenBtn.Name = "OpenBtn"
+OpenBtn.Size = UDim2.new(0, 55, 0, 55)
+OpenBtn.Position = UDim2.new(0, 20, 0.4, 0)
+OpenBtn.BackgroundColor3 = Color3.fromRGB(0, 140, 255)
+OpenBtn.Text = "👑"
+OpenBtn.TextSize = 24
+OpenBtn.Font = Enum.Font.GothamBold
+OpenBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+OpenBtn.Parent = ScreenGui
+OpenBtn.Active = true
+OpenBtn.Draggable = true
+Instance.new("UICorner", OpenBtn).CornerRadius = UDim.new(0, 10)
+Instance.new("UIStroke", OpenBtn).Color = Color3.fromRGB(0, 200, 255)
+
+local TrollIcons = {"👑","🥶","🗿","💀","🔥","😈","🐧"}
+local iconIdx = 1
+task.spawn(function()
+    while OpenBtn and OpenBtn.Parent do
+        OpenBtn.Text = TrollIcons[iconIdx]
+        iconIdx = iconIdx + 1
+        if iconIdx > #TrollIcons then iconIdx = 1 end
+        task.wait(0.8)
+    end
+end)
+
+local Main = Instance.new("Frame")
+Main.Size = UDim2.new(0, 520, 0, 400)
+Main.Position = UDim2.new(0.5, -260, 0.5, -200)
+Main.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
+Main.BorderSizePixel = 0
+Main.Visible = false
+Main.Active = true
+Main.Draggable = true
+Main.Parent = ScreenGui
+Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 14)
+Instance.new("UIStroke", Main).Color = Color3.fromRGB(40, 40, 55)
+
+-- ====================== 🔥 AURA UI 99999 🔥 ======================
+local AuraStroke = Instance.new("UIStroke")
+AuraStroke.Parent = Main
+AuraStroke.Thickness = 3
+AuraStroke.Transparency = 0.15
+local AuraGradient = Instance.new("UIGradient")
+AuraGradient.Parent = AuraStroke
+AuraGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 200, 255)),
+    ColorSequenceKeypoint.new(0.25, Color3.fromRGB(100, 0, 255)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 0, 120)),
+    ColorSequenceKeypoint.new(0.75, Color3.fromRGB(255, 180, 0)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 255, 180))
+})
+task.spawn(function()
+    while Main and Main.Parent do
+        for i = 0, 360, 3 do
+            if not AuraGradient or not AuraGradient.Parent then break end
+            AuraGradient.Rotation = i
+            task.wait(0.025)
+        end
+    end
+end)
+
+local AuraGlow = Instance.new("Frame")
+AuraGlow.Name = "AuraGlow"
+AuraGlow.Size = UDim2.new(1, 12, 1, 12)
+AuraGlow.Position = UDim2.new(0, -6, 0, -6)
+AuraGlow.BackgroundTransparency = 1
+AuraGlow.ZIndex = Main.ZIndex - 1
+AuraGlow.Parent = Main
+Instance.new("UICorner", AuraGlow).CornerRadius = UDim.new(0, 18)
+
+local GlowStroke = Instance.new("UIStroke")
+GlowStroke.Parent = AuraGlow
+GlowStroke.Thickness = 5
+GlowStroke.Transparency = 0.35
+local GlowGradient = Instance.new("UIGradient")
+GlowGradient.Parent = GlowStroke
+GlowGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 170, 255)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(180, 0, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 255, 255))
+})
+task.spawn(function()
+    while AuraGlow and AuraGlow.Parent do
+        local tween1 = TweenService:Create(GlowStroke, TweenInfo.new(0.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {Thickness = 9, Transparency = 0.05})
+        local tween2 = TweenService:Create(GlowStroke, TweenInfo.new(0.8, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {Thickness = 4, Transparency = 0.4})
+        tween1:Play()
+        tween1.Completed:Wait()
+        tween2:Play()
+        tween2.Completed:Wait()
+    end
+end)
+
+local AuraParticles = Instance.new("Frame")
+AuraParticles.Name = "AuraParticles"
+AuraParticles.Size = UDim2.new(1, 0, 1, 0)
+AuraParticles.BackgroundTransparency = 1
+AuraParticles.ClipsDescendants = true
+AuraParticles.ZIndex = Main.ZIndex + 5
+AuraParticles.Parent = Main
+
+local AuraIcons = {"🔥","🥶","💀","👑","🗿","⚡","✨","😈","🐧","💠","🤯","🥀","🗣️","👀","🤑"}
+task.spawn(function()
+    while AuraParticles and AuraParticles.Parent do
+        local particle = Instance.new("TextLabel")
+        local size = math.random(12, 22)
+        particle.Size = UDim2.new(0, size, 0, size)
+        particle.Position = UDim2.new(math.random(), 0, 1, 0)
+        particle.BackgroundTransparency = 1
+        particle.Text = AuraIcons[math.random(1, #AuraIcons)]
+        particle.TextSize = size
+        particle.TextTransparency = 0.15
+        particle.ZIndex = 20
+        particle.Parent = AuraParticles
+        local endX = math.clamp(particle.Position.X.Scale + math.random(-15, 15) / 100, 0, 1)
+        local tween = TweenService:Create(particle, TweenInfo.new(math.random(12, 22) / 10, Enum.EasingStyle.Linear), {
+            Position = UDim2.new(endX, 0, -0.15, 0),
+            TextTransparency = 1,
+            Rotation = math.random(-180, 180)
+        })
+        tween:Play()
+        task.delay(2.5, function() if particle then particle:Destroy() end end)
+        task.wait(0.25)
+    end
+end)
+
+local AuraText = Instance.new("TextLabel")
+AuraText.Name = "AuraText"
+AuraText.Size = UDim2.new(0, 150, 0, 22)
+AuraText.Position = UDim2.new(1, -165, 0, 8)
+AuraText.BackgroundTransparency = 1
+AuraText.Text = "🔥 AURA: 99999+"
+AuraText.TextColor3 = Color3.fromRGB(255, 255, 255)
+AuraText.Font = Enum.Font.GothamBold
+AuraText.TextSize = 12
+AuraText.TextXAlignment = Enum.TextXAlignment.Right
+AuraText.ZIndex = 30
+AuraText.Parent = Main
+
+local AuraTextGradient = Instance.new("UIGradient")
+AuraTextGradient.Parent = AuraText
+AuraTextGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 220, 255)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 0, 200)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 220, 0))
+})
+task.spawn(function()
+    while AuraText and AuraText.Parent do
+        AuraTextGradient.Offset = Vector2.new(-1, 0)
+        local tween = TweenService:Create(AuraTextGradient, TweenInfo.new(1.2, Enum.EasingStyle.Linear), {Offset = Vector2.new(1, 0)})
+        tween:Play()
+        tween.Completed:Wait()
+    end
+end)
+
+local AuraStatus = Instance.new("TextLabel")
+AuraStatus.Size = UDim2.new(1, -30, 0, 18)
+AuraStatus.Position = UDim2.new(0, 15, 1, -45)
+AuraStatus.BackgroundTransparency = 1
+AuraStatus.Text = "🗿 STATUS: BÁ KHÍ ĐANG HOẠT ĐỘNG 🔥"
+AuraStatus.TextColor3 = Color3.fromRGB(170, 220, 255)
+AuraStatus.Font = Enum.Font.GothamBold
+AuraStatus.TextSize = 10
+AuraStatus.TextXAlignment = Enum.TextXAlignment.Center
+AuraStatus.ZIndex = 30
+AuraStatus.Parent = Main
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, -180, 0, 40)
+Title.Position = UDim2.new(0, 18, 0, 6)
+Title.BackgroundTransparency = 1
+Title.Text = "👑🐧 BeoHub v5.0"
+Title.TextColor3 = Color3.fromRGB(0, 200, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 20
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = Main
+
+local Titles = {"👑🐧 BeoHub v5.0","🥶🐧 AURA MAX","🗿🐧 NO MERCY","💀🐧 BÁ KHÍ","🔥👑 LEGEND MODE"}
+local titleIdx = 1
+task.spawn(function()
+    while Title and Title.Parent do
+        Title.Text = Titles[titleIdx]
+        titleIdx = titleIdx + 1
+        if titleIdx > #Titles then titleIdx = 1 end
+        task.wait(2)
+    end
+end)
+
+local Close = Instance.new("TextButton")
+Close.Size = UDim2.new(0, 32, 0, 32)
+Close.Position = UDim2.new(1, -42, 0, 8)
+Close.BackgroundTransparency = 1
+Close.Text = "✕"
+Close.TextColor3 = Color3.fromRGB(255, 80, 80)
+Close.Font = Enum.Font.GothamBold
+Close.TextSize = 20
+Close.Parent = Main
+
+-- ====================== 🗿 TROLL KHI MỞ UI ======================
+local OpenTrollMessages = {
+    "🗿 BeoHub đã xuất hiện.",
+    "🥶 AURA +999999.",
+    "🔥 BÁ KHÍ ĐÃ KÍCH HOẠT.",
+    "💀 Server vừa thấy gì vậy?",
+    "🐧 PENGUIN POWER ACTIVATED.",
+    "😱 Người xài BeoHub đã vào.",
+    "🤮 Người xài nnvn đang khóc...",
+    "🗣️ BEHOLD... BEOHUB.",
+    "👑 Chủ nhân đã online.",
+    "🗿 Não server: loading...",
+    "🥀 10 giây trước: bình thường.",
+    "💀 10 giây sau: BeoHub.",
+    "🔥 AURA KHÔNG THỂ KIỂM SOÁT.",
+    "😈 Không có gì đáng ngờ ở đây.",
+    "🐧 Chim cánh cụt đã thức tỉnh."
+}
+local function ShowOpenTroll()
+    local old = ScreenGui:FindFirstChild("OpenTroll")
+    if old then old:Destroy() end
+    local Troll = Instance.new("TextLabel")
+    Troll.Name = "OpenTroll"
+    Troll.Size = UDim2.new(0, 360, 0, 42)
+    Troll.Position = UDim2.new(0.5, -180, 0, 70)
+    Troll.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+    Troll.BackgroundTransparency = 0.1
+    Troll.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Troll.Font = Enum.Font.GothamBlack
+    Troll.TextSize = 15
+    Troll.Text = OpenTrollMessages[math.random(1, #OpenTrollMessages)]
+    Troll.TextTransparency = 1
+    Troll.ZIndex = 100
+    Troll.Parent = ScreenGui
+    Instance.new("UICorner", Troll).CornerRadius = UDim.new(0, 12)
+    local Stroke = Instance.new("UIStroke")
+    Stroke.Color = Color3.fromRGB(0, 200, 255)
+    Stroke.Thickness = 2
+    Stroke.Parent = Troll
+    TweenService:Create(Troll, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {TextTransparency = 0, Position = UDim2.new(0.5, -180, 0, 85)}):Play()
+    task.delay(2.5, function()
+        if Troll and Troll.Parent then
+            local fade = TweenService:Create(Troll, TweenInfo.new(0.4), {TextTransparency = 1, BackgroundTransparency = 1})
+            fade:Play()
+            fade.Completed:Wait()
+            Troll:Destroy()
+        end
+    end)
+end
+
+OpenBtn.MouseButton1Click:Connect(function()
+    Main.Visible = not Main.Visible
+    if Main.Visible then ShowOpenTroll() end
+end)
+Close.MouseButton1Click:Connect(function() Main.Visible = false end)
+-- ====================== TAB ======================
+local TabBar = Instance.new("Frame")
+TabBar.Size = UDim2.new(1, -30, 0, 42)
+TabBar.Position = UDim2.new(0, 15, 0, 52)
+TabBar.BackgroundTransparency = 1
+TabBar.ClipsDescendants = true
+TabBar.Parent = Main
+
+local TabScroll = Instance.new("ScrollingFrame")
+TabScroll.Size = UDim2.new(1, 0, 1, 0)
+TabScroll.BackgroundTransparency = 1
+TabScroll.ScrollBarThickness = 0
+TabScroll.ScrollingDirection = Enum.ScrollingDirection.X
+TabScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+TabScroll.AutomaticCanvasSize = Enum.AutomaticSize.X
+TabScroll.Parent = TabBar
+
+local TabLayout = Instance.new("UIListLayout", TabScroll)
+TabLayout.FillDirection = Enum.FillDirection.Horizontal
+TabLayout.Padding = UDim.new(0, 5)
+
+local Tabs = {"Câu Cá","Kỹ Năng","Công Cụ","Dịch Chuyển","Thương Nhân","Linh Hồn","Code","Join Server","Update"}
+local TabButtons = {}
+local Pages = {}
+
+for i, name in ipairs(Tabs) do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0, 70, 1, 0)
+    btn.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    btn.Text = name
+    btn.TextColor3 = Color3.fromRGB(180, 180, 200)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 10
+    btn.LayoutOrder = i
+    btn.Parent = TabScroll
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+    TabButtons[name] = btn
+
+    local page = Instance.new("ScrollingFrame")
+    page.Size = UDim2.new(1, -30, 1, -130)
+    page.Position = UDim2.new(0, 15, 0, 105)
+    page.BackgroundTransparency = 1
+    page.ScrollBarThickness = 4
+    page.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    page.CanvasSize = UDim2.new(0, 0, 0, 0)
+    page.Visible = (i == 1)
+    page.Parent = Main
+    Instance.new("UIListLayout", page).Padding = UDim.new(0, 6)
+    Pages[name] = page
+end
+
+local function SwitchTab(name)
+    for n, p in pairs(Pages) do
+        p.Visible = (n == name)
+        TabButtons[n].BackgroundColor3 = (n == name) and Color3.fromRGB(0, 140, 255) or Color3.fromRGB(30, 30, 40)
+        TabButtons[n].TextColor3 = (n == name) and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 200)
+    end
+end
+
+for name, btn in pairs(TabButtons) do
+    btn.MouseButton1Click:Connect(function() SwitchTab(name) end)
+end
+
+local function CreateToggle(parent, text, default, callback)
+    local row = Instance.new("Frame")
+    row.Size = UDim2.new(1, 0, 0, 38)
+    row.BackgroundColor3 = Color3.fromRGB(28, 28, 38)
+    row.Parent = parent
+    Instance.new("UICorner", row).CornerRadius = UDim.new(0, 10)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(0.75, 0, 1, 0)
+    label.Position = UDim2.new(0, 12, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = Color3.fromRGB(230, 230, 240)
+    label.Font = Enum.Font.GothamBold
+    label.TextSize = 13
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = row
+    local toggle = Instance.new("TextButton")
+    toggle.Size = UDim2.new(0, 50, 0, 26)
+    toggle.Position = UDim2.new(1, -62, 0.5, -13)
+    toggle.BackgroundColor3 = default and Color3.fromRGB(0, 170, 100) or Color3.fromRGB(50, 50, 65)
+    toggle.Text = ""
+    toggle.Parent = row
+    Instance.new("UICorner", toggle).CornerRadius = UDim.new(1, 0)
+    local state = default
+    toggle.MouseButton1Click:Connect(function()
+        state = not state
+        toggle.BackgroundColor3 = state and Color3.fromRGB(0, 170, 100) or Color3.fromRGB(50, 50, 65)
+        callback(state)
+    end)
+end
+
+local function CreateButton(parent, text, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 38)
+    btn.BackgroundColor3 = Color3.fromRGB(0, 130, 220)
+    btn.Text = text
+    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    btn.Font = Enum.Font.GothamBold
+    btn.TextSize = 13
+    btn.Parent = parent
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
+    btn.MouseButton1Click:Connect(callback)
+end
+
+local function CreateInput(parent, placeholder, callback)
+    local box = Instance.new("TextBox")
+    box.Size = UDim2.new(1, 0, 0, 38)
+    box.BackgroundColor3 = Color3.fromRGB(28, 28, 38)
+    box.PlaceholderText = placeholder
+    box.PlaceholderColor3 = Color3.fromRGB(120, 120, 140)
+    box.Text = ""
+    box.TextColor3 = Color3.fromRGB(230, 230, 240)
+    box.Font = Enum.Font.Gotham
+    box.TextSize = 12
+    box.ClearTextOnFocus = false
+    box.TextXAlignment = Enum.TextXAlignment.Left
+    box.Parent = parent
+    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 10)
+    Instance.new("UIPadding", box).PaddingLeft = UDim.new(0, 12)
+    box.FocusLost:Connect(function() callback(box.Text) end)
+end
+
+local function CreateParagraph(parent, title, content)
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 0, 0)
+    frame.AutomaticSize = Enum.AutomaticSize.Y
+    frame.BackgroundColor3 = Color3.fromRGB(28, 28, 38)
+    frame.Parent = parent
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+    Instance.new("UIPadding", frame).PaddingTop = UDim.new(0, 10)
+    Instance.new("UIPadding", frame).PaddingBottom = UDim.new(0, 10)
+    Instance.new("UIPadding", frame).PaddingLeft = UDim.new(0, 12)
+    Instance.new("UIPadding", frame).PaddingRight = UDim.new(0, 12)
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(1, 0, 0, 0)
+    lbl.AutomaticSize = Enum.AutomaticSize.Y
+    lbl.BackgroundTransparency = 1
+    lbl.Text = "👑 " .. title .. "\n" .. content
+    lbl.TextColor3 = Color3.fromRGB(200, 200, 220)
+    lbl.Font = Enum.Font.Gotham
+    lbl.TextSize = 12
+    lbl.TextWrapped = true
+    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    lbl.TextYAlignment = Enum.TextYAlignment.Top
+    lbl.Parent = frame
+end
+
+-- TAB CÂU CÁ
+CreateToggle(Pages["Câu Cá"], "💰 Auto Bán Cá", false, function(v) getgenv().SafeAutoSell = v end)
+CreateToggle(Pages["Câu Cá"], "Giữ Thanh Bar", false, function(v) getgenv().NWKZ_Anchor = v end)
+CreateButton(Pages["Câu Cá"], "💰 Bán Tất Cả Cá", function()
+    pcall(function()
+        if RS:FindFirstChild("Events") and RS.Events:FindFirstChild("SellFish") then
+            RS.Events.SellFish:FireServer("All")
+        end
+    end)
+end)
+CreateButton(Pages["Câu Cá"], "🎣 Bật Nút Câu Ảo PPINGYYY", function()
+    pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/hayaccphuhhhs-droid/N-t-c-u-o-PPINGYYY-/refs/heads/main/N%C3%BAt%20c%C3%A2u%20%E1%BA%A3o%20PPINGYYY"))()
+    end)
+end)
+
+-- TAB KỸ NĂNG
+CreateToggle(Pages["Kỹ Năng"], "⚡ Tất Cả Kỹ Năng", false, function(v) getgenv().PP_AutoSkillAll = v end)
+CreateToggle(Pages["Kỹ Năng"], "🔥 Kỹ Năng Z", false, function(v) getgenv().PP_Skill_Z = v end)
+CreateToggle(Pages["Kỹ Năng"], "💀 Kỹ Năng X", false, function(v) getgenv().PP_Skill_X = v end)
+CreateToggle(Pages["Kỹ Năng"], "🥶 Kỹ Năng C", false, function(v) getgenv().PP_Skill_C = v end)
+CreateToggle(Pages["Kỹ Năng"], "👑 Kỹ Năng V", false, function(v) getgenv().PP_Skill_V = v end)
+CreateParagraph(Pages["Kỹ Năng"], "Cách Dùng", "Bật toggle kỹ năng muốn dùng. Script tự dùng skill mỗi 1s.")
+
+-- TAB CÔNG CỤ
+CreateToggle(Pages["Công Cụ"], "⚡ Xuyên Tường", false, function(v) getgenv().PP_Noclip = v end)
+CreateButton(Pages["Công Cụ"], "🔥 Fix Lag", function()
+    pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/hayaccphuhhhs-droid/Beohub/refs/heads/main/Fix%20lag"))()
+    end)
+end)
+CreateButton(Pages["Công Cụ"], "📐 Đo Tọa Độ (Copy)", function()
+    local char = lp.Character
+    if not char then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    local coords = math.floor(hrp.Position.X) .. ", " .. math.floor(hrp.Position.Y) .. ", " .. math.floor(hrp.Position.Z)
+    setclipboard(coords)
+    print("📍 " .. coords)
+end)
+
+-- WALK ON WATER
+local WaterParts = {}
+local OriginalWaterData = {}
+local function FindWaterParts()
+    WaterParts = {}
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("BasePart") and obj.Name:lower() == "water" then
+            table.insert(WaterParts, obj)
+        end
+    end
+    return #WaterParts
+end
+local function EnableWalkOnWater()
+    local count = FindWaterParts()
+    if count == 0 then return false end
+    for _, waterPart in ipairs(WaterParts) do
+        OriginalWaterData[waterPart] = {CanCollide = waterPart.CanCollide}
+        waterPart.CanCollide = true
+    end
+    return true
+end
+local function DisableWalkOnWater()
+    for waterPart, data in pairs(OriginalWaterData) do
+        if waterPart and waterPart.Parent then
+            waterPart.CanCollide = data.CanCollide
+        end
+    end
+    OriginalWaterData = {}
+end
+CreateToggle(Pages["Công Cụ"], "🌊 Đi Trên Mặt Nước", false, function(v)
+    getgenv().WalkOnWater = v
+    if v then EnableWalkOnWater() else DisableWalkOnWater() end
+end)
+task.spawn(function()
+    while task.wait(0.5) do
+        if getgenv().WalkOnWater then
+            local char = lp.Character
+            if char then
+                local hum = char:FindFirstChildOfClass("Humanoid")
+                if hum then
+                    hum.AutoRotate = true
+                    hum.PlatformStand = false
+                end
+            end
+        end
+    end
+end)
+
+-- TAB DỊCH CHUYỂN
+local function addTP(tab, name, x, y, z)
+    CreateButton(Pages[tab], "👑 " .. name, function()
+        if lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
+            lp.Character.HumanoidRootPart.CFrame = CFrame.new(x, y, z)
+        end
+    end)
+end
+addTP("Dịch Chuyển", "🔥 Đảo Khởi Đầu", -236, 6, 56)
+addTP("Dịch Chuyển", "💀 Đảo Tre", -1226, 5, -23)
+addTP("Dịch Chuyển", "🥶 Đảo Tro Bụi", 74, 6, 1216)
+addTP("Dịch Chuyển", "🗿 Đảo Chủ Quyền", -1285, 6, 1240)
+addTP("Dịch Chuyển", "😈 Đảo Perch", -47, 9, -1337)
+addTP("Dịch Chuyển", "😱 Đảo Băng", -1348, 9, -1485)
+addTP("Dịch Chuyển", "🔥 Đảo Dừa", 1434, 9, -1433)
+addTP("Dịch Chuyển", "💀 Đảo Amber", 1243, 6, 1393)
+addTP("Dịch Chuyển", "🥶 Đảo Đấu Trường", 1543, 46, -51)
+addTP("Dịch Chuyển", "🗿 Đảo Núi Ai Lao", 2635, 6, -17)
+addTP("Dịch Chuyển", "😈 Đảo Thiên Đường", -2417, 7, -204)
+
+-- TAB THƯƠNG NHÂN
+CreateButton(Pages["Thương Nhân"], "👑 Tìm Thương Nhân", function()
+    local char = lp.Character or lp.CharacterAdded:Wait()
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("Model") and (string.find(string.lower(obj.Name), "merchant") or string.find(string.lower(obj.Name), "traveling") or string.find(string.lower(obj.Name), "secret")) then
+            local targetHrp = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("PrimaryPart")
+            if targetHrp then
+                hrp.CFrame = targetHrp.CFrame * CFrame.new(0, 0, -3)
+                break
+            end
+        end
+    end
+end)
+addTP("Thương Nhân", "🔥 Điểm 1", -33, 8, 1606)
+addTP("Thương Nhân", "💀 Điểm 2", -1496, 9, 1134)
+addTP("Thương Nhân", "🥶 Điểm 3", -1528, 6, -1311)
+addTP("Thương Nhân", "🗿 Điểm 4", 1293, 8, 1428)
+addTP("Thương Nhân", "😈 Điểm 5", 1592, 47, -44)
+addTP("Thương Nhân", "🥵 Điểm 6", -178, 6, -1268)
+addTP("Thương Nhân", "🔥 Điểm 7", 2861, 6, 121)
+addTP("Thương Nhân", "💀 Điểm 8", 1501, 6, -1471)
+
+-- TAB LINH HỒN
+addTP("Linh Hồn", "🥶 Điểm 1", -1604, 21, -138)
+addTP("Linh Hồn", "🗿 Điểm 2", -1310, 14, -1576)
+addTP("Linh Hồn", "😈 Điểm 3", 1536, 72, 1513)
+
+-- TAB CODE
+local multiCode = ""
+CreateInput(Pages["Code"], "Nhập nhiều code (mỗi dòng 1 code)", function(v) multiCode = v end)
+CreateButton(Pages["Code"], "👑 Nhập Tất Cả Code", function()
+    if multiCode == "" then return end
+    local codes = {}
+    for code in multiCode:gmatch("[^\r\n]+") do
+        table.insert(codes, code)
+    end
+    task.spawn(function()
+        for i, code in ipairs(codes) do
+            pcall(function()
+                if RS:FindFirstChild("Events") and RS.Events:FindFirstChild("RedeemCode") then
+                    RS.Events.RedeemCode:FireServer(code)
+                elseif RS:FindFirstChild("Events") and RS.Events:FindFirstChild("Code") then
+                    RS.Events.Code:FireServer(code)
+                end
+            end)
+            print("[" .. i .. "/" .. #codes .. "] " .. code)
+            task.wait(0.5)
+        end
+    end)
+end)
+CreateParagraph(Pages["Code"], "Hướng Dẫn", "Nhập nhiều code vào ô trên (mỗi dòng 1 code), rồi bấm 'Nhập Tất Cả Code'.")
+
+-- TAB JOIN SERVER
+local jobId = ""
+CreateInput(Pages["Join Server"], "Nhập Job ID...", function(v) jobId = v end)
+CreateButton(Pages["Join Server"], "🔥 Join Server", function()
+    if jobId == "" then return end
+    pcall(function()
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, jobId, lp)
+    end)
+end)
+CreateButton(Pages["Join Server"], "💀 Copy Job ID Hiện Tại", function()
+    if game.JobId and game.JobId ~= "" then
+        setclipboard(game.JobId)
+        print("✅ Đã copy: " .. game.JobId)
+    end
+end)
+CreateButton(Pages["Join Server"], "🥶 Join Từ Clipboard", function()
+    local clip = getclipboard()
+    if clip and clip ~= "" then
+        pcall(function()
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, clip, lp)
+        end)
+    end
+end)
+CreateParagraph(Pages["Join Server"], "Hướng Dẫn", "1. Nhập Job ID vào ô trên\n2. Bấm 'Join Server'\n3. Hoặc 'Copy Job ID' để lấy ID server hiện tại\n4. Hoặc 'Join Từ Clipboard' nếu đã copy ID")
+
+-- TAB UPDATE
+CreateParagraph(Pages["Update"], "👑 BeoHub v5.0", "Phiên bản BÁ KHÍ + Walk on Water + Anti Admin 🔥")
+CreateParagraph(Pages["Update"], "📅 Ngày cập nhật", "18/09/2026")
+CreateParagraph(Pages["Update"], "🆕 Có gì mới?", "1. AURA INTRO 10s\n2. Aura UI 99999\n3. 🌊 Walk on Water (fix hướng)\n4. 🛡️ Anti Admin tự động tắt script\n5. Lên phiên bản v5.0")
+CreateParagraph(Pages["Update"], "🛡️ Anti Admin", "Tự động phát hiện admin:\n- tom_iceren\n- ctgthecreator\nKhi admin vào → TẮT hết script!")
+
+CreateButton(Pages["Update"], "🚀 KÍCH HOẠT KHFRESH HUB", function()
+    pcall(function()
+        loadstring(game:HttpGet("https://bombaus-auth.phu-tho-vn.workers.dev/raw/khfresh-hub.lua"))()
+    end)
+end)
+CreateParagraph(Pages["Update"], "📢 KHFRESH HUB", "Script xịn - Load từ bombaus-auth")
+
+CreateParagraph(Pages["Update"], "📌 Lưu ý", "1. Không teleport liên tục\n2. Chạy server ít người khi farm\n3. Test acc phụ trước")
+CreateParagraph(Pages["Update"], "Tin nhắn", "Ai dùng script này sẽ rất béo! 🐧")
+-- TROLL MESSAGES
+local TrollMessages = {"🗿 Mày vừa mở BeoHub.","🥶 AURA ĐANG TĂNG...","🤫 TOM_ICEREN KHÔNG BIẾT GÌ ĐÂU.","💀 NÃO SERVER ĐANG LOAD...","🔥 BÁ KHÍ ĐÃ ĐƯỢC KÍCH HOẠT.","🥀 Sức mạnh script power.","😈 99999 AURA.","🗿 Không có gì đáng ngờ ở đây.","🤮 Người xài nnvn 🤮👎","😱 Người xài BeoHub AURA 999999"}
+local msgIdx = 1
+local TrollLabel = Instance.new("TextLabel")
+TrollLabel.Size = UDim2.new(1, -30, 0, 16)
+TrollLabel.Position = UDim2.new(0, 15, 1, -20)
+TrollLabel.BackgroundTransparency = 1
+TrollLabel.Text = TrollMessages[1]
+TrollLabel.TextColor3 = Color3.fromRGB(150, 150, 170)
+TrollLabel.Font = Enum.Font.GothamBold
+TrollLabel.TextSize = 10
+TrollLabel.TextXAlignment = Enum.TextXAlignment.Center
+TrollLabel.ZIndex = 31
+TrollLabel.Parent = Main
+task.spawn(function()
+    while TrollLabel and TrollLabel.Parent do
+        TrollLabel.Text = TrollMessages[msgIdx]
+        msgIdx = msgIdx + 1
+        if msgIdx > #TrollMessages then msgIdx = 1 end
+        task.wait(10)
+    end
+end)
+
+-- VÒNG LẶP AUTO
+task.spawn(function()
+    while task.wait(0.3) do
+        if getgenv().SafeAutoSell then
+            pcall(function()
+                if RS:FindFirstChild("Events") and RS.Events:FindFirstChild("SellFish") then
+                    RS.Events.SellFish:FireServer("All")
+                end
+            end)
+            task.wait(getgenv().SafeSellInterval or 5)
+        end
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if getgenv().NWKZ_Anchor then
+        pcall(function()
+            local gui = lp.PlayerGui:FindFirstChild("MainGui")
+            local fishingUI = gui and gui:FindFirstChild("Fishing")
+            if fishingUI and fishingUI.Visible then
+                local bar = fishingUI:FindFirstChild("BarFrame") and fishingUI.BarFrame:FindFirstChild("Bar")
+                if bar then bar.Position = UDim2.new(0.5, 0, bar.Position.Y.Scale, 0) end
+                if RS:FindFirstChild("Events") and RS.Events:FindFirstChild("Fishing") then
+                    RS.Events.Fishing:FireServer("1")
+                end
+            end
+        end)
+    end
+end)
+
+task.spawn(function()
+    while task.wait(1) do
+        pcall(function()
+            local char = lp.Character
+            if not char then return end
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if not hum or hum.Health <= 0 then return end
+            if getgenv().PP_AutoSkillAll or getgenv().PP_Skill_Z then
+                VIM:SendKeyEvent(true, Enum.KeyCode.Z, false, game)
+                task.wait(0.15)
+                VIM:SendKeyEvent(false, Enum.KeyCode.Z, false, game)
+            end
+            if getgenv().PP_AutoSkillAll or getgenv().PP_Skill_X then
+                VIM:SendKeyEvent(true, Enum.KeyCode.X, false, game)
+                task.wait(0.15)
+                VIM:SendKeyEvent(false, Enum.KeyCode.X, false, game)
+            end
+            if getgenv().PP_AutoSkillAll or getgenv().PP_Skill_C then
+                VIM:SendKeyEvent(true, Enum.KeyCode.C, false, game)
+                task.wait(0.15)
+                VIM:SendKeyEvent(false, Enum.KeyCode.C, false, game)
+            end
+            if getgenv().PP_AutoSkillAll or getgenv().PP_Skill_V then
+                VIM:SendKeyEvent(true, Enum.KeyCode.V, false, game)
+                task.wait(0.15)
+                VIM:SendKeyEvent(false, Enum.KeyCode.V, false, game)
+            end
+        end)
+    end
+end)
+
+RunService.Stepped:Connect(function()
+    pcall(function()
+        local char = lp.Character
+        if char and char:FindFirstChild("Humanoid") then
+            char.Humanoid.WalkSpeed = getgenv().PP_WalkSpeed or 16
+        end
+        if getgenv().PP_Noclip and char then
+            for _, p in ipairs(char:GetDescendants()) do
+                if p:IsA("BasePart") then p.CanCollide = false end
+            end
+        end
+    end)
+end)
+
+print("👑 BeoHub v5.0 + Khfresh trong UI + Walk on Water + Anti Admin loaded!")
